@@ -5,15 +5,17 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
 
-# Load dataset
-def load_data(file_path):
+def load_data():
+    file_path = "../data/BrentOilPrices.csv"
     df = pd.read_csv(file_path)
     df.columns = ['Date', 'Price']
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce', dayfirst=True)
     df = df.dropna().sort_values(by='Date')
     return df
 
-# Exploratory Data Analysis
+def save_cleaned_data(df):
+    df.to_csv("../data/cleaned_BrentOilPrices.csv", index=False)
+
 def plot_price_trends(df):
     plt.figure(figsize=(12, 6))
     sns.lineplot(x=df['Date'], y=df['Price'])
@@ -23,7 +25,6 @@ def plot_price_trends(df):
     plt.grid()
     plt.show()
 
-# Bayesian Change Point Detection
 def detect_change_points(df):
     with pm.Model() as model:
         switchpoint = pm.DiscreteUniform("switchpoint", lower=0, upper=len(df) - 1)
@@ -40,13 +41,13 @@ def detect_change_points(df):
         
     return trace, switchpoint
 
-# Run analysis
-def main(file_path):
-    df = load_data(file_path)
+def main():
+    df = load_data()
+    save_cleaned_data(df)
     plot_price_trends(df)
     trace, switchpoint = detect_change_points(df)
     pm.plot_posterior(trace)
     plt.show()
 
 if __name__ == "__main__":
-    main("brent_oil_prices.csv")
+    main()
