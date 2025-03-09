@@ -1,14 +1,14 @@
-from flask import Flask, jsonify
-from flask_cors import CORS
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+from database import get_db
+import crud, schemas
 
-app = Flask(__name__)
-CORS(app)
+app = FastAPI()
 
-from routes.analysis import analysis_bp
-app.register_blueprint(analysis_bp)
-@app.route('/')
+@app.get("/")
 def home():
-    return jsonify({"message": "Welcome to Brent Oil Price Analysis API!"})
+    return {"message": "Brent Oil API is Running"}
 
-if __name__ == '__main__':
-    app.run(debug=True)
+@app.get("/prices/", response_model=list[schemas.Price])
+def get_prices(db: Session = Depends(get_db)):
+    return crud.get_prices(db)
